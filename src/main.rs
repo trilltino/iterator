@@ -1,7 +1,6 @@
 // Crust of Rust Iterators
 
 // Iterator is a trait that is implemented by types that can be iterated over.
-// it is implemented by  pub trait Iterator where Self::Item is the type of the values that the iterator produces.
 // the reason an iterator is used is to iterate over a collection of items, one at a time, in a safe and efficient manner. 
 // Types that implement the Iterator trait must define an associated Item type
 
@@ -16,7 +15,7 @@
 
 pub trait IteratorExt: Iterator + Sized {
     fn our_flatten(self) -> Flatten<Self>
-    where 
+     where 
         Self::Item: IntoIterator;
 }
 
@@ -29,14 +28,15 @@ pub trait IteratorExt: Iterator + Sized {
 impl <T> IteratorExt for T
 where
 T: Iterator,
-{
-fn our_flatten(self) -> Flatten<Self>
-where
-Self::Item: IntoIterator,
-{
-flatten(self)
+    {
+        fn our_flatten(self) -> Flatten<Self>
+    where
+    Self::Item: IntoIterator,
+    {
+    flatten(self)
+    } 
 }
-}
+
 // Here Impl<T>  means that the Trait ext we defined earlier will be implemented for any type T that implements the Iterator trait.
 // the where clause specifies that the Item type of the iterator must implement the IntoIterator trait.
 // this is beacase the flatten function requires the type to be an iterator itself
@@ -45,12 +45,11 @@ flatten(self)
 //the flatten(self) is a method body. this means that the method is implemented by calling the flatten function with the iterator as an argument.
 // the iterator is self, which is the iterator that the method is called on.
 
-pub fn flatten<I>(iter: I) -> Flatten<I::IntoIter>
-where I: IntoIterator,
-I::Item: IntoIterator,
-{
-Flatten::new(iter.into_iter())
-}
+    pub fn flatten<I>(iter: I) -> Flatten<I::IntoIter>
+        where I: IntoIterator,
+        I::Item: IntoIterator,  {
+    Flatten::new(iter.into_iter())
+        }
 
 // the flatten function takes an iterator as an argument and returns a Flatten iterator. It is generic over the type I, which is the type of the iterator, it being generic means that it can take any type that implements the IntoIterator trait.
 // the where clause has two constraints: Type I must implement the IntoIterator trait, and the Item type of I must also implement the IntoIterator trait.
@@ -85,15 +84,14 @@ impl<O> Flatten<O>
 where
 
 O: Iterator,
-O::Item: IntoIterator,
-{
+O::Item: IntoIterator, {
 fn new(iter:O) -> Self {
 Flatten {
     outer: iter,
     front_iter: None,
     back_iter: None,
-}
-}
+   }
+  }
 }
 
 // This code creates and implementations for the Flatten struct. This flattens and iterator of iterators into a single iterator 
@@ -202,17 +200,20 @@ fn one () {
 
 
 #[test]
-    fn two () {
+fn two () {
         assert_eq!(flatten(std::iter::once(vec!["a", "b"])).count(), 2);
 }
+// this test checks that the flatten function works with an iterator that has two inner iterators.
+
 
 #[test]
-    fn two_wide() {
+fn two_wide() {
         assert_eq!(flatten(vec![vec!["a"], vec!["b"]]).count(), 2);
     }
+    // this test checks that the flatten function works with a wide iterator that has two inner iterators.
 
 #[test]
-    fn reverse() {
+fn reverse() {
         assert_eq!(
             flatten(std::iter::once(vec!["a", "b"]))
             .rev()
@@ -221,9 +222,12 @@ fn one () {
         );
     }
 
+    // this test checks that the flatten function works with an iterator that has two inner iterators. 
+    // reverse is called on the iterator to reverse the order of the items.
+
     
 #[test]
-    fn reverse_wide() {
+fn reverse_wide() {
         assert_eq!(
             flatten(vec![vec!["a"], vec!["b"]])
             .rev()
@@ -231,6 +235,9 @@ fn one () {
             vec!["b", "a"]
         );
     }
+    // this is similar to above but with a wide iterator.
+    // the wided iterator is a vector of vectors. and wide means that there are multiple inner iterators.
+    // this is the reversal of the order of the items in the iterator.
 
 #[test]
 fn both_ends () {
@@ -245,6 +252,10 @@ fn both_ends () {
     assert_eq!(iter.next_back(), None);
 }
 
+// the both_ends test checks if the flatten function works with an iterator that has multiple inner iterators.
+// it calls next and next_back on the iterator to get the items from the front and back of the iterator.
+// the item type of the iterator is a string, so the items are strings. 
+
 #[test]
 fn inf() {
     let mut iter = flatten((0..).map(|i|0..i));
@@ -252,11 +263,22 @@ fn inf() {
     assert_eq!(iter.next(), Some(0));
     assert_eq!(iter.next(), Some(1));
 }
+ // this test checks that the flatten function works with an infinite iterator.
+ // an infinite iterator is an iterator that never ends. it goes on forever.
+ // a real life example of an infinite iterator is the range function in rust. it creates an iterator that generates a sequence of numbers.
+ // assert_eq! is used to check that the items from the iterator are correct. 
+ // some(1) means that the iterator has an item of 1. and some(0) means that the iterator has an item of 0.
+ // therefore the test checks that the items from the iterator are correct.
+
 
 #[test]
 fn deep() {
     assert_eq!(flatten(flatten(vec![vec![vec![0, 1]]])).count(), 2);
 }
+
+// this test checks that the flatten function works with a deep iterator.
+
+
 
 #[test]
 fn ext() {
